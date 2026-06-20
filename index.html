@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#14161d">
-<title>❤️동양고 기말 대비 어휘❤️</title>
+<title>🩵동양고 기말 대비 어휘🩵</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gothic+A1:wght@400;500;700;800&display=swap" rel="stylesheet">
@@ -317,8 +317,10 @@ function categoryAll(){ return DATA.filter(d => d.t===S.cat); }
 
 function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}return a;}
 
+const ROUND_SIZE = 10;   // 한 번에 풀 문제 수
 function startRound(items){
-  S.pool = items ? items : shuffle(filtered());
+  // items가 있으면(틀린 것 다시 풀기) 그대로, 없으면 필터된 풀에서 무작위 10개
+  S.pool = items ? items : shuffle(filtered()).slice(0, ROUND_SIZE);
   S.i=0; S.score=0; S.streak=0; S.best=0; S.wrong=[]; S.answered=false; S.finished=false;
   buildGrid(); updateStat(); render();
 }
