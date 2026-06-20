@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#14161d">
+<title>먹 · 어휘 사자성어 연습</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=Gothic+A1:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#14161d;            /* 먹빛 배경 */
+    --ink-2:#1d212c;          /* 카드 뒤 패널 */
+    --paper:#f3ede0;          /* 한지 카드 */
+    --paper-line:#d9cdb6;     /* 원고지 칸선 */
+    --text:#23252c;           /* 종이 위 글자 */
+    --muted:#8a8f9c;          /* 어두운 배경 위 보조 */
+    --line:#2c313d;           /* 어두운 배경 칸선 */
+    --jin:#c0392b;            /* 인주(印朱) 빨강 */
+    --jin-soft:#e0876f;
+    --ok:#3f9d6d;             /* 정답 초록(은은) */
+    --okbg:#e4f0e7;
+    --nobg:#f5e2dd;
+    --gold:#c9a14a;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;height:100%;}
+  body{
+    background:var(--ink);
+    color:#eee;
+    font-family:"Gothic A1",system-ui,sans-serif;
+    /* 원고지 칸: 아주 옅은 격자 */
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size:30px 30px;
+    background-position:center top;
+    display:flex; flex-direction:column;
+    min-height:100vh; min-height:100dvh;
+    overflow-x:hidden;
+  }
+  .wrap{width:100%;max-width:520px;margin:0 auto;flex:1;display:flex;flex-direction:column;padding:14px 16px calc(16px + env(safe-area-inset-bottom));}
+
+  /* ---------- 상단 ---------- */
+  header{text-align:center;padding-top:4px;}
+  .seal{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:38px;height:38px;border-radius:7px;border:2px solid var(--jin);
+    color:var(--jin);font-family:"Gowun Batang",serif;font-weight:700;font-size:22px;
+    box-shadow:0 0 0 3px rgba(192,57,43,.12);transform:rotate(-3deg);
+  }
+  h1{font-family:"Gowun Batang",serif;font-weight:700;font-size:18px;margin:8px 0 2px;letter-spacing:.04em;}
+  .subtitle{color:var(--muted);font-size:12px;letter-spacing:.06em;margin-bottom:12px;}
+
+  /* 필터칩 */
+  .chips{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;margin-bottom:10px;}
+  .chip{
+    border:1px solid var(--line);background:transparent;color:var(--muted);
+    font-family:inherit;font-size:12.5px;font-weight:500;padding:7px 13px;border-radius:999px;
+    cursor:pointer;transition:all .15s;
+  }
+  .chip[aria-pressed="true"]{background:var(--paper);color:var(--ink);border-color:var(--paper);font-weight:700;}
+  .chip.jin[aria-pressed="true"]{background:var(--jin);color:#fff;border-color:var(--jin);}
+
+  /* 진행: 원고지 칸 채우기 */
+  .progress{display:flex;align-items:center;gap:9px;margin:4px 2px 14px;}
+  .grid-bar{flex:1;display:flex;gap:3px;}
+  .cell{flex:1;height:9px;border:1px solid var(--line);border-radius:2px;background:transparent;transition:background .25s;}
+  .cell.done{background:var(--gold);border-color:var(--gold);}
+  .cell.now{border-color:var(--paper);}
+  .pcount{font-size:12px;color:var(--muted);min-width:42px;text-align:right;font-variant-numeric:tabular-nums;}
+  .stat{display:flex;gap:14px;justify-content:center;margin-bottom:10px;font-size:12px;color:var(--muted);}
+  .stat b{color:var(--gold);font-size:14px;}
+  .stat .streak b{color:var(--jin-soft);}
+
+  /* ---------- 카드 ---------- */
+  .stage{flex:1;display:flex;flex-direction:column;justify-content:flex-start;}
+  .card{
+    background:var(--paper);color:var(--text);border-radius:16px;
+    padding:26px 20px 22px;position:relative;overflow:hidden;
+    box-shadow:0 10px 30px rgba(0,0,0,.4);
+    /* 종이 위 옅은 원고지 칸 */
+    background-image:linear-gradient(var(--paper-line) 1px,transparent 1px),linear-gradient(90deg,var(--paper-line) 1px,transparent 1px);
+    background-size:26px 26px;
+    margin-bottom:14px;
+  }
+  .card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--jin);opacity:.85;}
+  .tag{display:inline-block;font-size:11px;letter-spacing:.1em;color:var(--jin);font-weight:700;margin-bottom:14px;}
+  .tag .work{color:#9b8a66;margin-left:7px;font-weight:500;letter-spacing:.04em;}
+  .hanja{font-family:"Gowun Batang",serif;font-weight:700;line-height:1.15;letter-spacing:.02em;color:#1a1c22;}
+  .hanja.big{font-size:40px;}
+  .hanja.word{font-size:34px;}
+  .reading{font-family:"Gowun Batang",serif;font-size:18px;color:#6b5f48;margin-top:6px;}
+  .ask{margin-top:16px;font-size:13px;color:#8a7f6a;letter-spacing:.04em;}
+
+  /* 보기 버튼 */
+  .options{display:flex;flex-direction:column;gap:10px;}
+  .opt{
+    text-align:left;width:100%;min-height:54px;border-radius:13px;
+    border:1.5px solid var(--line);background:var(--ink-2);color:#e8e8ea;
+    font-family:inherit;font-size:15px;line-height:1.4;padding:13px 15px;cursor:pointer;
+    transition:transform .08s, border-color .15s, background .15s;
+    display:flex;align-items:center;gap:11px;
+  }
+  .opt .key{flex:none;width:22px;height:22px;border-radius:6px;border:1px solid var(--muted);
+    display:grid;place-items:center;font-size:12px;color:var(--muted);font-weight:700;}
+  .opt:active{transform:scale(.985);}
+  .opt:disabled{cursor:default;}
+  .opt.correct{background:var(--okbg);border-color:var(--ok);color:#1d3a2a;}
+  .opt.correct .key{background:var(--ok);border-color:var(--ok);color:#fff;}
+  .opt.wrong{background:var(--nobg);border-color:var(--jin);color:#5b211a;}
+  .opt.wrong .key{background:var(--jin);border-color:var(--jin);color:#fff;}
+  .opt:focus-visible{outline:3px solid var(--gold);outline-offset:2px;}
+
+  /* 해설 */
+  .explain{
+    margin-top:14px;background:var(--ink-2);border:1px solid var(--line);border-radius:13px;
+    padding:14px 15px;font-size:13.5px;line-height:1.6;color:#cdd1da;display:none;animation:rise .25s ease;
+  }
+  .explain.show{display:block;}
+  .explain .verdict{font-weight:800;font-size:13px;letter-spacing:.04em;margin-bottom:7px;display:flex;align-items:center;gap:7px;}
+  .verdict.o{color:var(--ok);} .verdict.x{color:var(--jin-soft);}
+  .explain .mean{color:#fff;font-weight:700;}
+  .explain .ctx{color:var(--muted);margin-top:6px;display:block;}
+  @keyframes rise{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
+
+  /* 카드 뒤집기(플래시카드) */
+  .flip{perspective:1000px;}
+  .flip .inner{position:relative;transition:transform .5s;transform-style:preserve-3d;min-height:210px;}
+  .flip.turned .inner{transform:rotateY(180deg);}
+  .flip .face{position:absolute;inset:0;backface-visibility:hidden;display:flex;flex-direction:column;justify-content:center;}
+  .flip .back{transform:rotateY(180deg);}
+
+  /* 하단 액션 */
+  .actions{display:flex;gap:10px;margin-top:auto;}
+  .btn{
+    flex:1;min-height:54px;border-radius:14px;border:none;font-family:inherit;font-size:16px;font-weight:700;
+    cursor:pointer;transition:transform .08s,opacity .15s;letter-spacing:.02em;
+  }
+  .btn:active{transform:scale(.98);}
+  .btn.primary{background:var(--paper);color:var(--ink);}
+  .btn.ghost{background:transparent;color:var(--muted);border:1.5px solid var(--line);}
+  .btn.jin{background:var(--jin);color:#fff;}
+  .btn:disabled{opacity:.4;cursor:default;}
+  .btn:focus-visible{outline:3px solid var(--gold);outline-offset:2px;}
+
+  /* 결과 화면 */
+  .result{text-align:center;padding:30px 10px;}
+  .result .big{font-family:"Gowun Batang",serif;font-size:54px;color:var(--gold);line-height:1;}
+  .result .big small{font-size:22px;color:var(--muted);}
+  .result h2{font-family:"Gowun Batang",serif;font-size:20px;margin:14px 0 6px;}
+  .result p{color:var(--muted);font-size:14px;margin:0 0 22px;}
+  .stamp{
+    display:inline-grid;place-items:center;width:88px;height:88px;border-radius:12px;border:3px solid var(--jin);
+    color:var(--jin);font-family:"Gowun Batang",serif;font-size:30px;font-weight:700;transform:rotate(-6deg);
+    box-shadow:0 0 0 4px rgba(192,57,43,.1);margin-bottom:18px;line-height:1.1;
+  }
+
+  .hint{text-align:center;color:var(--muted);font-size:11.5px;margin-top:12px;letter-spacing:.03em;}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation:none!important;transition:none!important;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="seal">墨</div>
+    <h1>만세전 · 이상한 관상가</h1>
+    <div class="subtitle">어휘와 사자성어, 이동하며 한 손으로</div>
+  </header>
+
+  <div class="chips" id="catChips" role="group" aria-label="유형 선택">
+    <button class="chip" data-cat="사자성어" aria-pressed="true">사자성어</button>
+    <button class="chip" data-cat="어휘" aria-pressed="false">어휘</button>
+  </div>
+  <div class="chips" id="workChips" role="group" aria-label="작품 선택">
+    <button class="chip" data-work="전체" aria-pressed="true">전체</button>
+    <button class="chip" data-work="만세전" aria-pressed="false">만세전</button>
+    <button class="chip" data-work="관상가" aria-pressed="false">관상가</button>
+  </div>
+  <div class="chips" id="modeChips" role="group" aria-label="모드 선택">
+    <button class="chip jin" data-mode="quiz" aria-pressed="true">4지선다</button>
+    <button class="chip jin" data-mode="card" aria-pressed="false">플래시카드</button>
+  </div>
+
+  <div class="progress">
+    <div class="grid-bar" id="gridBar" aria-hidden="true"></div>
+    <div class="pcount" id="pCount">0 / 0</div>
+  </div>
+  <div class="stat">
+    <span class="score">맞힘 <b id="sScore">0</b></span>
+    <span class="streak">연속 <b id="sStreak">0</b></span>
+    <span>최고 연속 <b id="sBest">0</b></span>
+  </div>
+
+  <div class="stage" id="stage"></div>
+  <div class="hint" id="hint">표제어를 보고 알맞은 뜻을 고르세요</div>
+</div>
+
+<script>
+/* ===================== 데이터 ===================== */
+/* type: '사자성어' | '어휘',  work: '만세전' | '관상가' | '공통' */
+const DATA = [
+  /* ── 만세전 · 사자성어 ── */
+  {t:'사자성어',w:'만세전',q:'命在頃刻',r:'명재경각',m:'목숨이 곧 끊어질 만큼 위태로움',c:'죽음(무덤)에 비유된 식민지 조선 민중의 처지'},
+  {t:'사자성어',w:'만세전',q:'塗炭之苦',r:'도탄지고',m:'진구렁·숯불에 빠진 듯한 극심한 고통',c:'일제 강점하 백성들의 참담한 삶'},
+  {t:'사자성어',w:'만세전',q:'阿鼻叫喚',r:'아비규환',m:'참혹한 처지에서 울부짖는 비참한 광경',c:'결박당하고 감시받는 거리·정거장의 풍경'},
+  {t:'사자성어',w:'만세전',q:'弱肉強食',r:'약육강식',m:'약한 자가 강한 자에게 잡아먹힘',c:'노동자로 팔려 가는 조선인의 현실'},
+  {t:'사자성어',w:'만세전',q:'苛斂誅求',r:'가렴주구',m:'가혹하게 세금을 매겨 재물을 빼앗음',c:'일제의 경제적 수탈'},
+  {t:'사자성어',w:'만세전',q:'狐假虎威',r:'호가호위',m:'남의 권세를 빌려 위세를 부림',c:'일본의 위세를 등에 업은 앞잡이들의 태도'},
+  {t:'사자성어',w:'만세전',q:'晩時之歎',r:'만시지탄',m:'때가 이미 늦었음을 뒤늦게 한탄함',c:'현실을 뒤늦게 자각하는 ‘나’의 안타까움'},
+  {t:'사자성어',w:'만세전',q:'目不忍見',r:'목불인견',m:'차마 눈 뜨고 볼 수 없음',c:'시든 배춧잎 같은 얼굴들을 바라보는 시선'},
+  {t:'사자성어',w:'만세전',q:'袖手傍觀',r:'수수방관',m:'팔짱만 끼고 보고만 있음',c:'자각은 하되 행동하지 않는 지식인 이인화'},
+  {t:'사자성어',w:'만세전',q:'束手無策',r:'속수무책',m:'손이 묶인 듯 어찌할 방책이 없음',c:'현실 앞에서 무력한 지식인의 처지'},
+  {t:'사자성어',w:'만세전',q:'左顧右眄',r:'좌고우면',m:'이리저리 살피며 결단하지 못함',c:'냉소만 할 뿐 회피하는 ‘나’의 태도'},
+  {t:'사자성어',w:'만세전',q:'隔世之感',r:'격세지감',m:'다른 세상이 된 듯한 느낌',c:'7년 만에 본, 일본인 상점으로 변한 대전 거리'},
+  {t:'사자성어',w:'만세전',q:'桑田碧海',r:'상전벽해',m:'세상이 몰라보게 크게 달라짐',c:'일제에 장악되어 급변한 조선의 시가'},
+
+  /* ── 이상한 관상가 · 사자성어 ── */
+  {t:'사자성어',w:'관상가',q:'塞翁之馬',r:'새옹지마',m:'화와 복은 예측할 수 없이 뒤바뀜',c:'부귀한 자가 야위고 빈천한 자가 귀해진다는 관상의 원리'},
+  {t:'사자성어',w:'관상가',q:'否極泰來',r:'비극태래',m:'막힘이 다하면 형통함이 옴',c:'“막힘이 지극하면 반드시 펴진다”와 통하는 말'},
+  {t:'사자성어',w:'관상가',q:'苦盡甘來',r:'고진감래',m:'고생 끝에 즐거움이 옴',c:'겸손히 반성하여 형편이 펴지는 빈천한 자'},
+  {t:'사자성어',w:'관상가',q:'興盡悲來',r:'흥진비래',m:'즐거움이 다하면 슬픔이 옴',c:'교만해져 끝내 몰락하는 부귀한 자'},
+  {t:'사자성어',w:'관상가',q:'物極必反',r:'물극필반',m:'사물이 극에 달하면 반드시 되돌아감',c:'“죄가 가득 차면 하늘이 뒤집어 놓는다”'},
+  {t:'사자성어',w:'관상가',q:'自業自得',r:'자업자득',m:'제가 저지른 일의 과보를 제가 받음',c:'교만이 쌓여 스스로 화를 부르는 부귀한 자'},
+  {t:'사자성어',w:'관상가',q:'自繩自縛',r:'자승자박',m:'제 줄로 제 몸을 묶어 스스로 옭아맴',c:'용기를 믿다 자객이 되어 족쇄를 차는 민첩한 자'},
+  {t:'사자성어',w:'관상가',q:'附和雷同',r:'부화뇌동',m:'줏대 없이 남을 따라 함',c:'덩달아 관상가를 사기꾼이라 떠드는 대중'},
+  {t:'사자성어',w:'관상가',q:'群盲撫象',r:'군맹무상',m:'부분만 보고 전체를 그릇 판단함',c:'겉모습만 보고 사람을 단정하는 통념'},
+  {t:'사자성어',w:'관상가',q:'一切唯心造',r:'일체유심조',m:'모든 것은 마음먹기에 달려 있음',c:'보는 이에 따라 색이 아름답기도 추하기도 하다'},
+  {t:'사자성어',w:'관상가',q:'先見之明',r:'선견지명',m:'앞일을 미리 내다보는 밝은 지혜',c:'이면을 헤아려 관상을 보는 ‘이상한 관상가’'},
+
+  /* ── 공통 사자성어 ── */
+  {t:'사자성어',w:'공통',q:'井底之蛙',r:'정저지와',m:'우물 안 개구리, 좁은 식견에 갇힘',c:'통념에 갇혀 진실을 못 보는 사람들(두 작품 공통)'},
+
+  /* ── 만세전 · 어휘 ── */
+  {t:'어휘',w:'만세전',q:'여로',r:'旅路',m:'나그넷길, 여행의 경로',c:'도쿄→서울→도쿄로 이어지는 ‘여로형 구조’의 핵심어'},
+  {t:'어휘',w:'만세전',q:'위독',r:'危篤',m:'병이 깊어 생명이 위태로움',c:'아내가 위독하다는 소식이 귀국의 계기'},
+  {t:'어휘',w:'만세전',q:'신축',r:'新築',m:'건물을 새로 지음',c:'일본인 상점이 새로 들어선 대전 거리'},
+  {t:'어휘',w:'만세전',q:'처량하다',r:'凄凉',m:'마음이 구슬프도록 쓸쓸하다',c:'요령 소리만 울리는 변해 버린 거리의 분위기'},
+  {t:'어휘',w:'만세전',q:'괴괴하다',r:'',m:'쓸쓸할 만큼 아주 고요하다',c:'※ ‘괴기하다(무섭다)’와 혼동 주의'},
+  {t:'어휘',w:'만세전',q:'밉살맞다',r:'',m:'말이나 행동이 몹시 밉다',c:''},
+  {t:'어휘',w:'만세전',q:'천대',r:'賤待',m:'업신여겨 푸대접함',c:'천대를 받느니 차라리… 하는 갓 장수의 처지'},
+  {t:'어휘',w:'만세전',q:'멸시',r:'蔑視',m:'깔보고 천하게 여김',c:'일본인이 조선인을 멸시하던 시대 상황'},
+  {t:'어휘',w:'만세전',q:'봉건적',r:'封建的',m:'신분·관습에 얽매인 낡은 것',c:'‘나’가 목격하는 조선인의 여전한 봉건적 습성'},
+  {t:'어휘',w:'만세전',q:'자각',r:'自覺',m:'스스로 깨달음',c:'현실을 자각해 가는 주인공의 변화'},
+  {t:'어휘',w:'만세전',q:'각성',r:'覺醒',m:'깨어 정신을 차림',c:'여로를 거치며 점차 성장하는 현실 의식'},
+  {t:'어휘',w:'만세전',q:'냉소적',r:'冷笑的',m:'쌀쌀맞게 비웃는',c:'무기력하게 비웃기만 하는 지식인의 시선'},
+  {t:'어휘',w:'만세전',q:'참담하다',r:'慘憺',m:'끔찍하고 절망적이다',c:'식민지 민족의 참담한 현실'},
+  {t:'어휘',w:'만세전',q:'실상',r:'實相',m:'실제의 모습',c:'식민지 조선의 총체적 실상'},
+  {t:'어휘',w:'만세전',q:'세태',r:'世態',m:'세상의 형편과 풍속',c:'인물의 눈을 통해 관찰되는 세태'},
+  {t:'어휘',w:'만세전',q:'갈모',r:'葛帽',m:'비 올 때 갓 위에 덮어 쓰던 고깔 모양 우비',c:'갓 장수의 차림 묘사'},
+  {t:'어휘',w:'만세전',q:'두루마기',r:'',m:'한복 위에 입는 길게 내려오는 겉옷',c:''},
+  {t:'어휘',w:'만세전',q:'엽초',r:'葉草',m:'잎담배',c:'곰방담뱃대에 엽초를 담는 촌사람의 모습'},
+  {t:'어휘',w:'만세전',q:'구격',r:'具格',m:'격식을 갖춤, 격식에 맞음',c:'“갓쟁이로는 구격이 맞지 않게”'},
+  {t:'어휘',w:'만세전',q:'여급',r:'女給',m:'술집·찻집에서 손님 시중을 들던 여자',c:''},
+  {t:'어휘',w:'만세전',q:'빈지',r:'',m:'한 짝씩 끼웠다 떼는 가게 덧문',c:'일본인 상점가의 풍경 묘사'},
+  {t:'어휘',w:'만세전',q:'결박',r:'結縛',m:'몸이나 손발을 묶음',c:'정거장에서 결박당한 사람들의 삽화'},
+  {t:'어휘',w:'만세전',q:'구루마',r:'',m:'수레 (일본어에서 온 말)',c:'요령 소리 내며 지나는 우동 파는 구루마'},
+  {t:'어휘',w:'만세전',q:'요령',r:'搖鈴',m:'흔들어 소리 내는 방울',c:'괴괴한 거리에 울리는 요령 소리'},
+  {t:'어휘',w:'만세전',q:'묘지',r:'墓地',m:'무덤이 있는 땅',c:'조선의 현실을 빗댄 작품의 핵심 비유(원제 ‘묘지’)'},
+  {t:'어휘',w:'만세전',q:'산소',r:'山所',m:'무덤을 높여 이르는 말',c:'무덤은 공동묘지밖에 못 쓴다는 산소 걱정'},
+  {t:'어휘',w:'만세전',q:'복받치다',r:'',m:'감정이 속에서 세차게 치밀어 오르다',c:'처량한 생각이 가슴에 복받쳐 오름'},
+  {t:'어휘',w:'만세전',q:'서성거리다',r:'',m:'한곳에 서지 못하고 자꾸 왔다 갔다 하다',c:'아이가 깨어 보채자 일어나 서성이는 여자'},
+
+  /* ── 이상한 관상가 · 어휘 ── */
+  {t:'어휘',w:'관상가',q:'부귀',r:'富貴',m:'재물이 많고 지위가 높음',c:'부귀하면 교만해진다는 관상가의 풀이'},
+  {t:'어휘',w:'관상가',q:'빈천',r:'貧賤',m:'가난하고 천함',c:'빈천하면 겸손히 반성한다는 풀이'},
+  {t:'어휘',w:'관상가',q:'필부',r:'匹夫',m:'보잘것없는 평범한 남자',c:'“우매하여 어리석은 필부가 될 것이기에”'},
+  {t:'어휘',w:'관상가',q:'족속',r:'族屬',m:'같은 겨레붙이, 무리',c:'“당신의 족속은 귀하게 될 것이오”'},
+  {t:'어휘',w:'관상가',q:'요염',r:'妖艶',m:'사람을 호릴 만큼 매우 아리따움',c:'눈을 의혹되게 하는 요염한 자태'},
+  {t:'어휘',w:'관상가',q:'진기',r:'珍奇',m:'보배롭고 진귀하며 기이함',c:'진기한 물건을 탐하게 하는 것이 눈'},
+  {t:'어휘',w:'관상가',q:'의혹',r:'疑惑',m:'의심하여 수상히 여김',c:'사람을 의혹되게 하는 것은 눈이다'},
+  {t:'어휘',w:'관상가',q:'왜곡',r:'歪曲',m:'사실을 비뚤어지게 함',c:'사람을 왜곡되게 하는 것은 눈이다'},
+  {t:'어휘',w:'관상가',q:'치욕',r:'恥辱',m:'부끄럽고 욕됨',c:'장님은 치욕을 멀리하므로 ‘눈이 밝다’'},
+  {t:'어휘',w:'관상가',q:'담박하다',r:'淡泊',m:'욕심이 없고 마음이 깨끗하다',c:'※ ‘욕심이 많다’로 오해하기 쉬움 — 정반대'},
+  {t:'어휘',w:'관상가',q:'능멸하다',r:'凌蔑',m:'업신여겨 깔보다',c:'용기가 있으면 대중을 능멸하게 된다'},
+  {t:'어휘',w:'관상가',q:'간악하다',r:'奸惡',m:'간사하고 악독하다',c:'끝내 간악한 우두머리가 된다'},
+  {t:'어휘',w:'관상가',q:'음탕',r:'淫蕩',m:'음란하고 방탕함',c:'음탕한 사람은 색을 아름답게 여긴다'},
+  {t:'어휘',w:'관상가',q:'순박하다',r:'淳朴',m:'순수하고 꾸밈이 없다',c:'단정하고 순박한 사람은 색을 추하게 여긴다'},
+  {t:'어휘',w:'관상가',q:'사모하다',r:'思慕',m:'우러러 그리워하다',c:'인자한 이가 죽으면 백성이 사모하여 운다'},
+  {t:'어휘',w:'관상가',q:'우매하다',r:'愚昧',m:'어리석고 사리에 어둡다',c:'우매하여 어리석은 필부'},
+  {t:'어휘',w:'관상가',q:'심원하다',r:'深遠',m:'헤아리기 어려울 만큼 깊다',c:'“겉으로는 천박하나 안으로는 심원한 것도 있네”'},
+  {t:'어휘',w:'관상가',q:'천박하다',r:'淺薄',m:'학식이나 생각이 얕다',c:'심원함과 짝을 이루는 말'},
+  {t:'어휘',w:'관상가',q:'초빙',r:'招聘',m:'예를 갖추어 불러 맞음',c:'다투어 관상가를 초빙하던 사람들'},
+  {t:'어휘',w:'관상가',q:'기이하다',r:'奇異',m:'기묘하고 이상하다',c:'“참으로 기이한 관상가로다”'},
+  {t:'어휘',w:'관상가',q:'흉악하다',r:'凶惡',m:'성질이 모질고 사납다',c:'“벌의 눈과 승냥이의 목소리니 흉악한 상”'},
+  {t:'어휘',w:'관상가',q:'좌우명',r:'座右銘',m:'늘 곁에 두고 경계로 삼는 말',c:'관상가의 말을 좌우명으로 삼을 만하다'},
+  {t:'어휘',w:'관상가',q:'취조',r:'取調',m:'죄나 사실을 캐어물음',c:'그를 잡아다 거짓말을 취조하려 함'},
+  {t:'어휘',w:'관상가',q:'옥졸',r:'獄卒',m:'옥에서 죄수를 지키던 사람',c:'옥졸이 가두어 족쇄와 칼을 씌움'},
+  {t:'어휘',w:'관상가',q:'족쇄',r:'足鎖',m:'죄인의 발에 채우던 쇠사슬',c:'민첩한 자가 끝내 차게 되는 형구'},
+  {t:'어휘',w:'관상가',q:'쭉정이',r:'',m:'알맹이가 들지 않은 빈 곡식',c:'“쭉정이도 먹지 못하게 되는 시기”'},
+  {t:'어휘',w:'관상가',q:'무릇',r:'',m:'대체로 헤아려 생각건대',c:'“무릇 색이라는 것은…”'},
+  {t:'어휘',w:'관상가',q:'승냥이',r:'',m:'이리와 비슷한 갯과 짐승',c:'흉악한 상을 빗댄 “승냥이의 목소리”'},
+  {t:'어휘',w:'관상가',q:'거슬리다',r:'',m:'마음에 어긋나 언짢다',c:'“처음에는 거슬리나 뒤에는 이치에 맞는 것도 있고”'},
+  {t:'어휘',w:'관상가',q:'현각자',r:'賢覺者',m:'현명하게 이치를 깨달은 사람',c:'장님이 현각자보다 뛰어나다는 역설'},
+
+  /* ── 공통 어휘 ── */
+  {t:'어휘',w:'공통',q:'파리하다',r:'',m:'몸이 마르고 핏기가 없다',c:'두 작품 모두 등장하는 묘사어'},
+];
+
+/* ===================== 상태 ===================== */
+const S = {cat:'사자성어', work:'전체', mode:'quiz',
+  pool:[], i:0, score:0, streak:0, best:0, answered:false, wrong:[], finished:false};
+
+const $ = s => document.querySelector(s);
+const stage = $('#stage');
+
+/* 풀(현재 필터)의 항목들 */
+function filtered(){
+  return DATA.filter(d => d.t===S.cat && (S.work==='전체' || d.w===S.work || d.w==='공통'));
+}
+/* 같은 카테고리 전체(오답 보기용) */
+function categoryAll(){ return DATA.filter(d => d.t===S.cat); }
+
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+function startRound(items){
+  S.pool = items ? items : shuffle(filtered());
+  S.i=0; S.score=0; S.streak=0; S.best=0; S.wrong=[]; S.answered=false; S.finished=false;
+  buildGrid(); updateStat(); render();
+}
+
+function buildGrid(){
+  const bar=$('#gridBar'); bar.innerHTML='';
+  const n=S.pool.length;
+  // 칸이 너무 많으면 20칸으로 묶어 비율 표시
+  const cells = Math.min(n, 20);
+  bar.dataset.cells=cells;
+  for(let k=0;k<cells;k++){const c=document.createElement('div');c.className='cell';bar.appendChild(c);}
+  paintGrid();
+}
+function paintGrid(){
+  const bar=$('#gridBar'); const cells=+bar.dataset.cells||0; const n=S.pool.length||1;
+  const doneRatio = S.i / n;
+  const doneCells = Math.round(doneRatio*cells);
+  [...bar.children].forEach((c,idx)=>{
+    c.className='cell'+(idx<doneCells?' done':'')+(idx===doneCells && !S.finished?' now':'');
+  });
+  $('#pCount').textContent = Math.min(S.i+ (S.finished?0:0), n) + ' / ' + n;
+  if(S.finished) $('#pCount').textContent = n+' / '+n;
+}
+function updateStat(){
+  $('#sScore').textContent=S.score;
+  $('#sStreak').textContent=S.streak;
+  $('#sBest').textContent=S.best;
+}
+
+/* ===================== 렌더 ===================== */
+function render(){
+  if(S.pool.length===0){
+    stage.innerHTML = `<div class="card"><div class="ask">선택한 조건에 해당하는 문제가 없어요. 위 필터를 바꿔 보세요.</div></div>`;
+    $('#hint').textContent='';
+    return;
+  }
+  if(S.i>=S.pool.length){ return renderResult(); }
+  S.mode==='quiz' ? renderQuiz() : renderCard();
+  paintGrid();
+}
+
+function headwordHTML(item){
+  if(item.t==='사자성어'){
+    return `<div class="hanja big">${item.q}</div><div class="reading">${item.r}</div>`;
+  }
+  const hanja = item.r ? `<div class="reading">${item.r}</div>` : '';
+  return `<div class="hanja word">${item.q}</div>${hanja}`;
+}
+
+function renderQuiz(){
+  const item=S.pool[S.i];
+  // 보기: 정답 1 + 같은 카테고리 오답 3
+  const others = shuffle(categoryAll().filter(d=>d.m!==item.m)).slice(0,3);
+  const opts = shuffle([item, ...others]);
+  const KEY=['㉠','㉡','㉢','㉣'];
+  $('#hint').textContent = (S.cat==='사자성어'?'사자성어':'어휘')+'의 뜻을 고르세요';
+  stage.innerHTML = `
+    <div class="card">
+      <span class="tag">${item.t}<span class="work">${item.w==='공통'?'만세전·관상가':item.w}</span></span>
+      ${headwordHTML(item)}
+      <div class="ask">알맞은 뜻은?</div>
+    </div>
+    <div class="options" id="options">
+      ${opts.map((o,k)=>`<button class="opt" data-correct="${o.m===item.m}">
+        <span class="key">${KEY[k]}</span><span>${o.m}</span></button>`).join('')}
+    </div>
+    <div class="explain" id="explain"></div>
+    <div class="actions">
+      <button class="btn ghost" id="skipBtn">건너뛰기</button>
+      <button class="btn primary" id="nextBtn" disabled>다음 ▶</button>
+    </div>`;
+  S.answered=false;
+  document.querySelectorAll('.opt').forEach(b=>b.addEventListener('click',onAnswer));
+  $('#skipBtn').addEventListener('click',()=>{ if(!S.answered){S.streak=0;updateStat();} next(); });
+  $('#nextBtn').addEventListener('click',next);
+}
+
+function onAnswer(e){
+  if(S.answered) return;
+  S.answered=true;
+  const item=S.pool[S.i];
+  const btns=[...document.querySelectorAll('.opt')];
+  const picked=e.currentTarget;
+  const correct = picked.dataset.correct==='true';
+  btns.forEach(b=>{
+    b.disabled=true;
+    if(b.dataset.correct==='true') b.classList.add('correct');
+  });
+  if(correct){
+    S.score++; S.streak++; S.best=Math.max(S.best,S.streak);
+  }else{
+    picked.classList.add('wrong'); S.streak=0; S.wrong.push(item);
+  }
+  updateStat();
+  const ex=$('#explain');
+  ex.innerHTML = `
+    <div class="verdict ${correct?'o':'x'}">${correct?'● 정답':'● 오답'}</div>
+    <span class="mean">${item.t==='사자성어'? item.q+' ('+item.r+')' : item.q}</span> — ${item.m}
+    ${item.c?`<span class="ctx">↳ ${item.c}</span>`:''}`;
+  ex.classList.add('show');
+  $('#nextBtn').disabled=false;
+  $('#nextBtn').focus();
+}
+
+function renderCard(){
+  const item=S.pool[S.i];
+  $('#hint').textContent='카드를 눌러 뜻을 확인하세요';
+  stage.innerHTML = `
+    <div class="card flip" id="flip">
+      <div class="inner">
+        <div class="face front">
+          <span class="tag">${item.t}<span class="work">${item.w==='공통'?'만세전·관상가':item.w}</span></span>
+          ${headwordHTML(item)}
+          <div class="ask">눌러서 뜻 보기</div>
+        </div>
+        <div class="face back">
+          <span class="tag">뜻</span>
+          <div class="hanja" style="font-size:23px;line-height:1.45;">${item.m}</div>
+          ${item.c?`<div class="reading" style="font-size:14px;margin-top:12px;color:#7a6d52;line-height:1.5;">↳ ${item.c}</div>`:''}
+        </div>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn ghost" id="againBtn">다시 볼래요</button>
+      <button class="btn primary" id="knowBtn">알아요 ✓</button>
+    </div>`;
+  const flip=$('#flip');
+  flip.addEventListener('click',()=>flip.classList.toggle('turned'));
+  $('#knowBtn').addEventListener('click',()=>{ S.score++; S.streak++; S.best=Math.max(S.best,S.streak); updateStat(); next(); });
+  $('#againBtn').addEventListener('click',()=>{ S.streak=0; S.wrong.push(item); updateStat(); next(); });
+}
+
+function next(){ S.i++; render(); }
+
+function renderResult(){
+  S.finished=true; paintGrid();
+  const total=S.pool.length, rate=Math.round(S.score/total*100);
+  let grade='又日新', word='꾸준함이 실력!';
+  if(rate>=90){grade='秀';word='거의 다 잡았어요.';}
+  else if(rate>=70){grade='優';word='조금만 더 다지면 완벽!';}
+  else if(rate>=50){grade='美';word='틀린 것만 다시 보면 빨라져요.';}
+  else {grade='可';word='오답부터 차근차근.';}
+  $('#hint').textContent='';
+  stage.innerHTML = `
+    <div class="result">
+      <div class="stamp">${grade}</div>
+      <div class="big">${rate}<small>%</small></div>
+      <h2>${total}문제 중 ${S.score}개 정답</h2>
+      <p>최고 연속 ${S.best}개 · ${word}</p>
+      <div class="actions" style="flex-direction:column;">
+        ${S.wrong.length?`<button class="btn jin" id="reviewBtn">틀린 ${S.wrong.length}개만 다시 풀기</button>`:''}
+        <button class="btn primary" id="retryBtn">처음부터 다시</button>
+      </div>
+    </div>`;
+  if(S.wrong.length) $('#reviewBtn').addEventListener('click',()=>startRound(shuffle(S.wrong)));
+  $('#retryBtn').addEventListener('click',()=>startRound());
+}
+
+/* ===================== 필터 칩 ===================== */
+function bindChips(id, key, after){
+  document.querySelectorAll(`#${id} .chip`).forEach(ch=>{
+    ch.addEventListener('click',()=>{
+      document.querySelectorAll(`#${id} .chip`).forEach(c=>c.setAttribute('aria-pressed','false'));
+      ch.setAttribute('aria-pressed','true');
+      S[key]=ch.dataset[key];
+      after && after();
+    });
+  });
+}
+bindChips('catChips','cat',()=>startRound());
+bindChips('workChips','work',()=>startRound());
+bindChips('modeChips','mode',()=>startRound());
+
+/* 시작 */
+startRound();
+</script>
+</body>
+</html>
